@@ -75,7 +75,7 @@ def split_curve_by_deleting_points(nodes, links, curve_socket, delete_selection_
 
 
 def raycast_terrain_z_python(context, road_obj, world_xy_pos, default_z):
-    """Raycasts the Landscape mesh from Python and returns the exact ground hit Z in road local space."""
+    """Raycasts the Landscape mesh from Python with a clean user warning if missing."""
     terrain_obj = None
     if road_obj.modifiers:
         mod = road_obj.modifiers[0]
@@ -86,7 +86,14 @@ def raycast_terrain_z_python(context, road_obj, world_xy_pos, default_z):
                     break
     if not terrain_obj:
         terrain_obj = bpy.data.objects.get("Landscape")
+        
     if not terrain_obj or terrain_obj.type != 'MESH':
+        # Show a friendly, warning in Blender's info header instead of a crash traceback!
+        context.window_manager.popup_menu(
+            lambda self, ctx: self.layout.label(text="⚠️ Error: Please name your terrain/landscape mesh object 'Landscape'!"),
+            title="Mountain Road Creator Warning",
+            icon='ERROR'
+        )
         return default_z
         
     depsgraph = context.evaluated_depsgraph_get()
